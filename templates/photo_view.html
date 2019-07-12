@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <div class="HolyGrail-body">
+    <main class="HolyGrail-content">
+      <div class="album py-5 bg-light">
+        <div class="container">
+
+          <img src="{{ pic.path.replace(basedir, '') }}" alt="could not find pictures" height="800" width="800">
+        </div>
+      </div>
+    </main>
+
+
+    <aside class="HolyGrail-ads" style="width:70px; background:rgb(229, 231, 233)  ">
+      {% include 'metadata.html' %}
+    </aside>
+
+
+  </div>
+{% endblock %}
+
+
+

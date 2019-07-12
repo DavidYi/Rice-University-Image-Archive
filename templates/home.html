@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+
+<!--
+<div class="album py-5 bg-light">
+    <div class="container">
+
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
+            <div class="card-body">
+                <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" onclick="window.location.href='#'" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" onclick="window.location.href='file:///C:/Users/wjc25/OneDrive/桌面/CRC-project/gallery%20-%20photo%20view.html'" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" onclick="window.location.href='file:///C:/Users/wjc25/OneDrive/桌面/CRC-project/gallery%20-%20photo%20view.html'" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+--> 
+
+{% block content %}
+
+
+  {% include 'search.html' %}
+
+  <div class="HolyGrail-body">
+    <main class="HolyGrail-content">
+      <div class="album py-5 bg-light">
+        <div class="container">
+          {% set item, row = namespace(a=0), 3%}
+
+          {% for folder in folders %}
+            
+            {% if item.a % row == 0 %}
+              <div class="row">
+            {% endif %}
+
+            <div class="col-md-4">
+              <div class="card mb-4 shadow-sm" ondblclick="location.href='{{url_for('core.home',folder=folder.name) }}'; ">
+                <img src="{{ url_for('static', filename='img/folder.png' ) }}" style="max-width: 100%; max-height:100%;">
+                <div class="card-body">
+                  <p class="card-text">Folder name: {{folder.name}}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" onclick="location.href='{{url_for('core.home', folder= folder.name)}}';" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% set item.a = item.a + 1 %}
+
+            {% if item.a % row == 0 %}
+              </div>
+            {% endif %}
+
+          {% endfor %}
+
+
+          {% for pic in pics %}
+            
+            {% if item.a % row == 0 %}
+              <div class="row">
+            {% endif %}
+
+            <div class="col-md-4">
+              <div class="card mb-4 shadow-sm selectable" id="{{ 'pic' + pic.id|string }}" onclick="getMetadata('{{ url_for('api_bp.get_metadata', pic_id=pic.id) }}', '{{pic.id}}', '{{ url_for('api_bp.addTag', pic_id=pic.id) }}', '{{ url_for('api_bp.update_metadata', pic_id=pic.id) }}',  '{{ url_for('core.movingFolder', photo=pic.id) }}')" ondblclick="location.href='{{url_for('core.single', photo=pic.id) }}';" >
+                <img src="{{ url_for('static', filename=pic.get_thumbnail(200,200).get_relative_path()) }}" style="max-width: 100%; max-height:100%;">
+                <div class="card-body">
+                  <p class="card-text">File name: {{pic.name}}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" onclick="location.href='{{ url_for('core.single', photo=pic.id) }}'" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% set item.a = item.a + 1 %}
+
+            {% if item.a % row == 0 %}
+              </div>
+            {% endif %}
+
+          {% endfor %}
+
+          {% if item.a % row != 0 %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </main>
+
+
+    <nav class="HolyGrail-nav" style="width: 100px; background:rgb(229, 231, 233)  ">
+      {% include 'folders.html' %}
+    </nav>
+
+
+    <aside class="HolyGrail-ads" style="width:70px; background:rgb(229, 231, 233)  ">
+      {% include 'metadata.html' %}
+    </aside>
+
+
+
+  </div>
+
+  <script type="text/javascript">
+    var metadataList = {};
+
+    function batchFormUpdate(response){
+      for (field in response){
+        var br = false;
+        //if input field exists and not already 7*
+        if ($('#batchForm input[name="'+field+'"]').length && $('#batchForm input[name="'+field+'"]').val()!="*******"){
+          for (pic in metadataList){
+            if (metadataList[pic][field] != response[field] && (metadataList[pic][field] || response[field])){
+              $('#batchForm input[name="'+field+'"]').val("*******");
+              br = true;
+              break;
+            }
+          }
+          //if all field is the same
+          if (!br){
+            $('#batchForm input[name="'+field+'"]').val('');
+          }
+
+        }
+      }
+    }
+
+    function getMetadata(url, pic_id, url_tag, url_metadata, url_folder){
+      //use getting json as buffer time to see if it has beeen selected or not
+      $.getJSON( url , function(response){
+        if ($("#pic" + pic_id).hasClass("selected")){
+           $('#batchForm input[name="ids"]').val($('#batchForm input[name="ids"]').val() + pic_id + ",");
+           $('#moveForm input[name="ids"]').val($('#batchForm input[name="ids"]').val());
+           $('#addTagForm input[name="ids"]').val($('#batchForm input[name="ids"]').val());
+
+          $("#addTagForm").show();
+          $("#moveForm").show();
+          $("#tags_container").show();
+
+          $("#moveForm").attr('action', url_folder);
+          
+          $('#addTagForm').submit(function () {
+            addingTag(url_tag);
+            return false;
+          });
+          /*
+          $('#moveForm').submit(function () {
+            movingFolder(url_folder);
+            return true;
+          });
+          */
+          $("#metadata_tags").empty();
+          for (index in response.tags){
+
+            tag = response.tags[index];
+            if (!tag["isFolder"]){
+              var str = "<div class='tag_container'>" + tag['name'] + "<button onclick='location.href='{{ url_for('core.remove_tag', photo=" + pic_id+", tag=" + tag['id'] + ") }}''><i class='material-icons'>clear</i></button><div style='clear:both;'></div> </div>";
+              $("#metadata_tags").append(str);
+            }
+          }
+
+          //if there is only one selected
+          if ($('.selected').length == 1){
+            //clear form every time new picture is chosen
+            $('#picForm')[0].reset();
+            $('#picForm').show()
+            $('#batchForm').hide()
+
+            //go through each field and change it manually
+            for (field in response.pic){
+              if($('#picForm input[name="'+field+'"]').length){ //does element exist
+                $('#picForm input[name="'+field+'"]').val(response.pic[field]);
+              }
+            }
+            
+            
+            //use this to make it not reload when submitted
+            $('#picForm').submit(function () {
+              updateMetadata(url_metadata);
+              return false;
+            });
+            
+            //$("#picForm").attr('action', url_metadata);
+          } else {
+            $("#picForm").hide();
+            $("#batchForm").show();
+
+            //$("#tags_container").hide();
+            //batch selection
+            //go through each field
+            batchFormUpdate(response.pic);
+          }
+
+          metadataList[pic_id] = response.pic;
+
+        }else{ //unselected 
+          $('#batchForm input[name="ids"]').val($('#batchForm input[name="ids"]').val().replace(pic_id + ",", ""));
+          $('#moveForm input[name="ids"]').val($('#moveForm input[name="ids"]').val());
+          $('#addTagForm input[name="ids"]').val($('#addTagForm input[name="ids"]').val());
+
+          delete metadataList[pic_id]
+          if ($('.selected').length == 0){
+            $('#picForm')[0].reset();
+            $('#batchForm').hide();
+            $('#picForm').show();
+
+            $("#tags_container").hide();
+            metadataList = {}
+          } else if (metadataList.length == 1){
+            $('#batchForm').hide();
+            $('#picForm').show();
+
+            var temp = metadataList(Object.keys(metadataList)[0])
+            for (field in temp){
+              if($('#picForm input[name="'+field+'"]').length){ //does element exist
+                $('#picForm input[name="'+field+'"]').val(temp[field]);
+              }
+            }
+          }else{
+            batchFormUpdate(Object.keys(metadataList)[0])
+          }
+        }
+      });
+    }
+
+    function updateMetadata(url){
+      $.ajax({
+        url: url,
+        data: $('#picForm').serialize(),
+        type: "POST",
+        success: function(response){
+          for (field in response.pic){
+            if($('#picForm input[name="'+field+'"]').length){
+              $('#picForm input[name="'+field+'"]').val(response.pic[field]);
+            }
+          }
+        }
+      })
+    }
+
+    function addingTag(url){
+      $.ajax({ 
+        url: url,
+        data: $('#addTagForm').serialize(),
+        type: "POST",
+        success: function(response){
+          $("#metadata_tags").empty()
+          for (index in response.tags){
+            tag = response.tags[index];
+            if (!tag["isFolder"]){
+              var str = "<div class='tag_container'>" + tag['name'] + "<button onclick='location.href='{{ url_for('core.remove_tag', photo=" + response.pic['id']+", tag=" + tag['id'] + ") }}''><i class='material-icons'>clear</i></button><div style='clear:both;'></div> </div>";
+              $("#metadata_tags").append(str);
+            }
+          }
+        }
+      });
+    }
+
+    function movingFolder(url){
+      $.ajax({ 
+        url: url,
+        data: $('#moveForm').serialize(),
+        type: "POST",
+        success: function(response){
+          $("#metadata_tags").empty()
+          for (index in response.tags){
+            tag = response.tags[index];
+            if (!tag["isFolder"]){
+              var str = "<div class='tag_container'>" + tag['name'] + "<button onclick='location.href='{{ url_for('core.remove_tag', photo=" + response.pic['id']+", tag=" + tag['id'] + ") }}''><i class='material-icons'>clear</i></button><div style='clear:both;'></div> </div>";
+              $("#metadata_tags").append(str);
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+{% endblock %}

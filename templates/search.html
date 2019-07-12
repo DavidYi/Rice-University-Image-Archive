@@ -1,0 +1,30 @@
+<section class="jumbotron text-center">
+  <div class="container">
+
+    {% for folder in folder_path %}
+      <i class="material-icons">chevron_right</i>
+      <a href="{{ url_for('core.home', folder=folder.name) }}">{{ folder.name }}</a>
+    {% endfor %}
+
+    <h1>Advanced Search</h1>
+    <form method="POST" action="{{ url_for('core.search_for') }}">
+      {% for field in searchForm %}
+        {% if field != searchForm.submitSearch %}
+          {{ field.label() }}
+        {% endif %}
+        {{ field() }}
+        <br>
+      {% endfor %}
+      <!--<button type="submit" style="float: left;"  value="Search Catalog">-->
+    </form>
+    <!--
+    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for title" title="Type in a name">
+    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for author" title="Type in a name">
+    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for date" title="Type in a name">
+    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for type" title="Type in a name">
+    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for archive" title="Type in a name">
+    <input type="button" style="float: left;"  value="Search Catalog" onclick="">
+    -->
+
+  </div>
+</section>

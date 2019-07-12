@@ -1,0 +1,116 @@
+<nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+  <a class="navbar-brand" href="#">Metadata</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">Tags <span class="sr-only">(current)</span></a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
+<form method="POST" id="picForm">
+  {% for field in picForm %}
+    {% if field != picForm.submitMetadata%}
+      {{ field.label() }}
+    {% endif %}
+    {{ field() }}
+    </br>
+  {% endfor %}
+
+   <!--<button type="submit" />-->
+</form>
+
+{% if batchForm %}
+  <form method="POST" id="batchForm" action="{{ url_for('api_bp.update_batch') }}" style="display: none;">
+    {% for field in batchForm %}
+      {% if field != batchForm.submitBatch%}
+        {{ field.label() }}
+      {% endif %}
+      {{ field() }}
+      </br>
+    {% endfor %}
+
+  </form>
+{% endif %}
+
+<div id="tags_container">
+  <h1>Tags</h1>
+  <div id="metadata_tags">
+    {% if pic %}
+      {% for tag in pic.tags %}
+        {% if not tag.isFolder %}
+          <div class="tag_container">
+            {{ tag.name }}
+            <button onclick="location.href='{{ url_for('core.remove_tag', photo=pic.id, tag=tag.id) }}'">
+              <i class="material-icons">clear</i>
+            </button>
+            <div style="clear:both;"></div>
+          </div>
+        {% endif %}
+      {% endfor %}
+
+    {% endif %}
+  </div>
+  <form id="addTagForm" method="POST" action="{% if pic %} {{ url_for('core.addingTag', photo=pic.id) }} {% endif %}" style="{% if not pic %} display: none; {% endif %}">
+    {{addTagForm.tags()}}
+    {{addTagForm.ids()}}
+    {{addTagForm.all_tags.label}} {{addTagForm.all_tags()}}
+    {{addTagForm.addTag()}}
+    
+  </form>
+
+  <form id="moveForm" method="POST" action="{% if pic %} {{ url_for('core.movingFolder', photo=pic.id) }} {% endif %}" style="{% if not pic %} display: none; {% endif %}">
+    {{moveForm.ids()}}
+    {{moveForm.all_folders.label}} {{moveForm.all_folders()}}
+    {{moveForm.changeFolder()}}
+    
+  </form>
+</div>
+<!--
+<br/>
+<div class="input-group input-group-sm mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="inputGroup-sizing-sm">title</span>
+  </div>
+  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+</div>
+
+<br/>
+<div class="input-group input-group-sm mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="inputGroup-sizing-sm">author</span>
+  </div>
+  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+</div>
+
+<br/>
+<div class="input-group input-group-sm mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="inputGroup-sizing-sm">date</span>
+  </div>
+  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+</div>
+
+<br/>
+<div class="input-group input-group-sm mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="inputGroup-sizing-sm">type</span>
+  </div>
+  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+</div>
+
+<br/>
+<div class="input-group input-group-sm mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="inputGroup-sizing-sm">archive</span>
+  </div>
+  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+</div>
+-->
+
+

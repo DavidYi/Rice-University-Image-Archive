@@ -1,0 +1,47 @@
+
+<nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+    <a class="navbar-brand" href="#">Album List</a>
+
+    <button class="add-folder-button" onclick="openForm('folderForm')"><i class="material-icons">add_box</i></button>
+    <div class="form-popup" id="folderForm">
+      <form method="POST" class="form-container">
+        <h1>Add Folder</h1>
+        {{ folderForm.hidden_tag() }}
+        {{ folderForm.name.label }} {{ folderForm.name() }}
+        {{ folderForm.submitFolder(class_="btn") }}
+        <button type="button" class="btn cancel" onclick="closeForm('folderForm')">Cancel</button>
+      </form>
+    </div>
+    <ul class="list-group list-group-flush">
+        <!--{# for #}-->
+        <li class="list-group-item">Folder 1</li>
+        <li class="list-group-item">Dapibus ac facilisis in</li>
+        <li class="list-group-item">Morbi leo risus</li>
+        <li class="list-group-item">Porta ac consectetur ac</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+        <li class="list-group-item">Cras justo odio</li>
+        <li class="list-group-item">Dapibus ac facilisis in</li>
+        <li class="list-group-item">Morbi leo risus</li>
+        <li class="list-group-item">Porta ac consectetur ac</li>
+    </ul>
+
+    <h1>Tags</h1>
+    <br>
+    <div class="tags-list">
+        {% for tag in tag_list %}
+            <a href="#">{{ tag.name }}</a>
+            <br>
+        {% endfor %}
+    </div>
+    <button class="add-tag-button" onclick="openForm('tagForm')"><i class="material-icons">add_box</i></button>
+    <div class="form-popup" id="tagForm">
+      <form method="POST" class="form-container">
+        <h1>Add Tag</h1>
+        {{ tagForm.hidden_tag() }}
+        {{ tagForm.name.label }} {{ tagForm.name() }}
+        {{ tagForm.submitTag(class_="btn") }}
+        <button type="button" class="btn cancel" onclick="closeForm('tagForm')">Cancel</button>
+      </form>
+    </div>
+</nav>
+
