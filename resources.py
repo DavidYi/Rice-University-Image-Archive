@@ -51,12 +51,20 @@ def update_metadata(pic_id):
 	#print type(request.form['date_doc'])
 	
 	if request.method=="POST":
-		picForm.populate_obj(pic)
+		#picForm.populate_obj(pic)
+
+	        for field in picForm:
+        	        if field.data:
+				setattr(pic, field.name, field.data)
+                	elif not field.data:
+				setattr(pic, field.name, None)
+
 
 		# when addin obj and request.form, dates are not being inputed so need to do it manually
 		pic.date_doc = request.form['date_doc']
 		pic.added = request.form['added']
 		pic.date_photo = request.form['date_photo']
+
 		#db.session.add(pic)
         	db.session.commit()
 		#return redirect(redirect_url())
@@ -75,11 +83,11 @@ def update_batch():
 	for field in batchForm:
 		if field.data and field.data != "*******" and field != batchForm.ids:
 			for pic in pics:
-				print pic
-				print field.name
-				print "naerb092903ri1oi3n1jn3f1n3glj12"
 				setattr(pic, field.name, field.data)
-				print pic
+		elif not field.data:
+			for pic in pics:
+				setattr(pic, field.name, None)
+
 	db.session.commit()
 	return redirect(redirect_url())
 				

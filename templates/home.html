@@ -157,7 +157,8 @@
         //if input field exists and not already 7*
         if ($('#batchForm input[name="'+field+'"]').length && $('#batchForm input[name="'+field+'"]').val()!="*******"){
           for (pic in metadataList){
-            if (metadataList[pic][field] != response[field] && (metadataList[pic][field] || response[field])){
+            if (metadataList[pic][field] != response[field]){
+              console.log(response[field])
               $('#batchForm input[name="'+field+'"]').val("*******");
               br = true;
               break;
@@ -165,7 +166,7 @@
           }
           //if all field is the same
           if (!br){
-            $('#batchForm input[name="'+field+'"]').val('');
+            $('#batchForm input[name="'+field+'"]').val(response[field]);
           }
 
         }
@@ -201,7 +202,7 @@
 
             tag = response.tags[index];
             if (!tag["isFolder"]){
-              var str = "<div class='tag_container'>" + tag['name'] + "<button onclick='location.href='{{ url_for('core.remove_tag', photo=" + pic_id+", tag=" + tag['id'] + ") }}''><i class='material-icons'>clear</i></button><div style='clear:both;'></div> </div>";
+              var str = "<div class='tag_container'>" + tag['name'] + "<button onclick='location.href={{ url_for('core.remove_tag', photo=" + pic_id+", tag=" + tag['id'] + ") }}''><i class='material-icons'>clear</i></button><div style='clear:both;'></div> </div>";
               $("#metadata_tags").append(str);
             }
           }
@@ -210,8 +211,9 @@
           if ($('.selected').length == 1){
             //clear form every time new picture is chosen
             $('#picForm')[0].reset();
-            $('#picForm').show()
-            $('#batchForm').hide()
+            $('#picForm').show();
+            $('#batchForm').hide();
+            $('#batchForm')[0].reset();
 
             //go through each field and change it manually
             for (field in response.pic){
@@ -248,6 +250,7 @@
           delete metadataList[pic_id]
           if ($('.selected').length == 0){
             $('#picForm')[0].reset();
+            $('#batchForm')[0].reset();
             $('#batchForm').hide();
             $('#picForm').show();
 
@@ -255,6 +258,7 @@
             metadataList = {}
           } else if (metadataList.length == 1){
             $('#batchForm').hide();
+            $('#batchForm')[0].reset();
             $('#picForm').show();
 
             var temp = metadataList(Object.keys(metadataList)[0])
@@ -289,24 +293,6 @@
       $.ajax({ 
         url: url,
         data: $('#addTagForm').serialize(),
-        type: "POST",
-        success: function(response){
-          $("#metadata_tags").empty()
-          for (index in response.tags){
-            tag = response.tags[index];
-            if (!tag["isFolder"]){
-              var str = "<div class='tag_container'>" + tag['name'] + "<button onclick='location.href='{{ url_for('core.remove_tag', photo=" + response.pic['id']+", tag=" + tag['id'] + ") }}''><i class='material-icons'>clear</i></button><div style='clear:both;'></div> </div>";
-              $("#metadata_tags").append(str);
-            }
-          }
-        }
-      });
-    }
-
-    function movingFolder(url){
-      $.ajax({ 
-        url: url,
-        data: $('#moveForm').serialize(),
         type: "POST",
         success: function(response){
           $("#metadata_tags").empty()
