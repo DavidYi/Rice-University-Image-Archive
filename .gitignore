@@ -41,5 +41,5 @@ Thumbs.db
 
 
 mnt/
-static/thumbnails/*
 migrations/
+static/thumbnails/*
