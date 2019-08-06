@@ -39,4 +39,5 @@
 ehthumbs.db
 Thumbs.db
 mnt/
+static/
 migrations/
