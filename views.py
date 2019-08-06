@@ -17,6 +17,7 @@ def index():
 
 @core.route('/view/<folder>', methods=["GET", "POST"])
 def home(folder):
+	print "hi"
 	folderForm = AddFolderForm()
 	picForm = UpdateMetadataForm()
 	searchForm = SearchForm()
@@ -100,9 +101,10 @@ def single(photo):
 			moveForm.all_folders.data = t
 			break
 
-	print type(picForm.date_doc.data)
 	if request.method=="POST" and picForm.submitMetadata.data:
-		print type(request.form['date_doc'])
+		for field in picForm:
+                        if not field.data:
+				field.data = None
 		picForm.populate_obj(pic)
 		db.session.add(pic)
 		db.session.commit()

@@ -26,7 +26,7 @@ ext.init_restful(api)
 
 
 ######### DATABASE #########
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:ricecrc@10.134.196.71/test'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:ricecrc@10.134.196.56/test'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
 
 db = SQLAlchemy(app)
