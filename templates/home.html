@@ -213,6 +213,7 @@
             $('#picForm')[0].reset();
             $('#picForm').show();
             $('#batchForm').hide();
+            $('#metadata_tags').show();
             $('#batchForm')[0].reset();
 
             //go through each field and change it manually
@@ -233,6 +234,7 @@
           } else {
             $("#picForm").hide();
             $("#batchForm").show();
+            $("#metadata_tags").hide();
 
             //$("#tags_container").hide();
             //batch selection
@@ -252,12 +254,14 @@
             $('#picForm')[0].reset();
             $('#batchForm')[0].reset();
             $('#batchForm').hide();
+            $('#metadata_tags').show();
             $('#picForm').show();
 
             $("#tags_container").hide();
             metadataList = {}
           } else if (metadataList.length == 1){
             $('#batchForm').hide();
+            $('#metadata_tags').show();
             $('#batchForm')[0].reset();
             $('#picForm').show();
 

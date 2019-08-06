@@ -8,6 +8,7 @@
 *.so
 *.pyc
 *.pyo
+*.swp
 
 # Packages #
 ############
@@ -38,3 +39,4 @@
 ehthumbs.db
 Thumbs.db
 mnt/
+migrations/
