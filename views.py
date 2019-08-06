@@ -118,11 +118,8 @@ def addingTag(photo):
         addTagForm = AddTag2PicForm(request.form)
 
         if request.method=="POST" and addTagForm.addTag.data:
-		print "adding tAG *@#^@!$&@$^!"
                 pic.add_tag(addTagForm.all_tags.data)
-        print "tagsdgaseg"
         return redirect(url_for('core.single', photo=photo))
-	#return render_template('photo_view.html',addTagForm=addTagForm, picForm=picForm, basedir=basedir, pic = pic)
 
 @core.route('/view/photo/<photo>/move', methods=["GET", "POST"])
 def movingFolder(photo):

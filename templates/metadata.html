@@ -65,7 +65,11 @@
   </form>
 
   <form id="moveForm" method="POST" action="{% if pic %} {{ url_for('core.movingFolder', photo=pic.id) }} {% endif %}" style="{% if not pic %} display: none; {% endif %}">
-    {{moveForm.ids()}}
+    {% if pic %}
+      {{moveForm.ids(value=pic.id)}}
+    {% else %}
+      {{moveForm.ids()}}
+    {% endif %}
     {{moveForm.all_folders.label}} {{moveForm.all_folders()}}
     {{moveForm.changeFolder()}}
     
