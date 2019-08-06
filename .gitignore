@@ -39,5 +39,5 @@
 ehthumbs.db
 Thumbs.db
 mnt/
-static/thumbnails/
+#static/thumbnails/
 migrations/
