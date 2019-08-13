@@ -78,6 +78,7 @@ class UpdateMetadataForm(ModelOrderedForm):
 
 	class Meta:
 		model = Pic
+		exclude = ['region','size','rotation','quality']
 		include = ['date_photo', 'added']
 		order = ('*', 'submitMetadata')
 
@@ -90,7 +91,7 @@ class BatchUpdateForm(ModelOrderedForm):
 
 	class Meta:
 		model = Pic
-		exclude = ['path', 'path_modified', 'name']
+		exclude = ['path', 'path_modified', 'name', 'region', 'rotation', 'quality']
 		include = ['date_photo', 'added']
 		order = ('*', 'submitBatch')
 
@@ -101,7 +102,7 @@ class SearchForm(ModelOrderedForm):
 	submitSearch = SubmitField("Search")
 	class Meta:
                 model = Pic
-                exclude = ['path']
+                exclude = ['path', 'path_modified', 'region', 'size','rotation', 'quality']
 		include = ['date_photo', 'added']
                 order = ('*', 'submitSearch')#'folder', 'tags', 'submitSearch')
 		
@@ -111,6 +112,9 @@ class SearchForm(ModelOrderedForm):
 	def return_field_names(self):
 		return self._fields.key()
 
+class CropForm(FlaskForm):
+	coor = HiddenField()
+	submitCoor = SubmitField('Crop')
 
 class AddFolderForm(FlaskForm):
 	name = StringField('Name', validators=[DataRequired()])

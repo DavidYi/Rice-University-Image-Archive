@@ -1,0 +1,7 @@
+<nav>
+	<ul>
+		<li><a href="{{ url_for('core.rotate', photo=pic.id, dir='l') }}"><button type="button" class="btn btn-outline-secondary"><i class="material-icons">rotate_left</i></button></a></li>
+		<li><a href="{{ url_for('core.rotate', photo=pic.id, dir='r') }}"><button type="button" class="btn btn-outline-secondary"><i class="material-icons">rotate_right</i></button></a></li>
+		<li><a href="{{ url_for('core.crop', photo=pic.id) }}"><button type="button" class="btn btn-outline-secondary"><i class="material-icons">crop</i></button></a></li>
+	</ul>
+</nav>

@@ -34,6 +34,10 @@ class Pic(db.Model):
         name = db.Column(db.String(140))
         path = db.Column(db.VARCHAR(250), nullable=False, unique=True)
         path_modified = db.Column(db.VARCHAR(250), unique=True, nullable=True)
+	region = db.Column(db.String(140), nullable=False, default='/full')
+	size = db.Column(db.String(140), nullable=False, default='/full')
+	rotation = db.Column(db.String(140), nullable=False, default='/0')
+	quality = db.Column(db.String(140), nullable=False, default='/default.')
 	date_doc = db.Column(db.DateTime)
 	date_photo = db.Column(db.DateTime, nullable=False)
         added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -55,7 +59,8 @@ class Pic(db.Model):
 
         def __init__(self, path, name='', date=datetime.utcnow()):
                 if name == '':
-                        self.name = os.path.splitext(os.path.basename(path))[0]
+                        self.name = os.path.basename(path)
+			#self.name = os.path.splitext(os.path.basename(path))[0]
                 else:
                         self.name = name
 

@@ -26,7 +26,7 @@ ext.init_restful(api)
 
 
 ######### DATABASE #########
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:ricecrc@10.134.196.56/test'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:ricecrc@10.134.196.59/test'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
 
 db = SQLAlchemy(app)
@@ -56,13 +56,12 @@ def setup():
 
 @event.listens_for(models.Tag.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
-     setup()
+	setup()
 
 def redirect_url(default='core.index'):
-    return request.args.get('next') or \
-           request.referrer or \
-           url_for(default)
-
+	return request.args.get('next') or \
+		request.referrer or \
+		url_for(default)
 
 ########### WATCHER ##########
 from multiprocessing import Process

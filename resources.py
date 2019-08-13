@@ -16,10 +16,6 @@ def get_metadata(pic_id):
 	tags = pic.tags
 	pic = pic_schema.dump(pic).data
 	tags = tags_schema.dump(tags).data
-	print "******************************"
-	print pic
-	print "*******"
-	print tags
 	return jsonify(pic=pic, tags=tags)
 
 @api_bp.route('/addTag/<pic_id>', methods=['GET', 'POST'])
@@ -76,15 +72,19 @@ def update_metadata(pic_id):
 def update_batch():
 	batchForm = BatchUpdateForm(request.form)
 	pics = []
+	print "########### request form for update batch #############"
 	print request.form
 	for id in filter(None, batchForm.ids.data.split(",")):
 		pics.append(Pic.query.filter_by(id=int(id)).first())
-	print pics	
+	print "******************* list of pics**********"
+	print pics
 	for field in batchForm:
-		if field.data and field.data != "*******" and field != batchForm.ids:
+		print str(field.name) + "\t" + str(request.form[field.name])
+		if request.form[field.name] and request.form[field.name] != "*******" and field != batchForm.ids:
 			for pic in pics:
-				setattr(pic, field.name, field.data)
-		elif not field.data:
+				setattr(pic, field.name, request.form[field.name])
+		elif not request.form[field.name] and request.form[field.name]!= "*******":
+			print "this is nothing in it" + str(field.name)
 			for pic in pics:
 				setattr(pic, field.name, None)
 

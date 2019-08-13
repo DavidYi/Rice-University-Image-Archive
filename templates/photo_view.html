@@ -1,13 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% set base_iiif_url = request.host_url[:-1] + ':81/loris/' %}
 
   <div class="HolyGrail-body">
     <main class="HolyGrail-content">
       <div class="album py-5 bg-light">
         <div class="container">
-
-          <img src="{{ pic.path.replace(basedir, '') }}" alt="could not find pictures" height="800" width="800">
+          {% include 'edit_menu.html' %}
+<!--           <img src="{{ pic.path.replace(basedir, '') }}" alt="could not find pictures" height="800" width="800"> -->
+          {% set iiif_pic = base_iiif_url + pic.name + pic.region + pic.size + pic.rotation + pic.quality  + 'jpg'  %}
+          <img src='{{ iiif_pic }}' alt="could not find pictures" height="800" width="800">
+          <!--<div id="map"></div>
+          <div id="urlArea"></div>
+          <script src="{{ url_for('static', filename='scripts/app.js') }}">
+          </script>
+          <script type="text/javascript">
+            addImage("{{ base_iiif_url + pic.name }}");
+          </script>-->
         </div>
       </div>
     </main>

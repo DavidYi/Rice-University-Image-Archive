@@ -7,7 +7,7 @@ import os
 from models import Tag, Pic, Tag_Hierarchy, search
 from testiiif import db, get_exifs,setup, basedir, redirect_url
 
-from forms import BatchUpdateForm, AddTag2PicForm, MoveFolderForm, SearchForm, AddFolderForm, UpdateMetadataForm, AddTagForm
+from forms import CropForm, BatchUpdateForm, AddTag2PicForm, MoveFolderForm, SearchForm, AddFolderForm, UpdateMetadataForm, AddTagForm
 
 core = Blueprint('core', __name__)
 
@@ -242,6 +242,36 @@ def cleardb():
         db.session.commit()
 	setup()
         return redirect(url_for('core.printdb'))
+
+@core.route('/rotate/<photo>/<dir>')
+def rotate(photo, dir):
+	pic = Pic.query.filter_by(id=photo).first_or_404()
+	rotate = int(pic.rotation[1:])
+	if dir == 'l':
+		rotate -= 90
+		while rotate < 0:
+			rotate += 360
+	elif dir == 'r':
+		rotate += 90
+		while rotate >= 360:
+			rotate -= 360
+	pic.rotation = pic.rotation[0] + str(rotate)
+	db.session.commit()
+	return redirect(redirect_url())
+
+@core.route('/view/crop/<photo>', methods=["GET","POST"])
+def crop(photo):
+	pic = Pic.query.filter_by(id=photo).first_or_404()
+	cropForm = CropForm(request.form)
+
+	if request.method=="POST" and cropForm.submitCoor.data:
+		pic.region = cropForm.coor.data
+		db.session.commit()
+		return redirect(url_for('core.single',photo=photo))
+	
+	return render_template('crop_view.html', cropForm=cropForm, pic = pic)
+
+	
 
 @core.route('/printdb', methods=['GET','POST'])
 def printdb():
