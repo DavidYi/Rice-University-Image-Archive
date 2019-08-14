@@ -231,6 +231,7 @@ def get_tags():
 	return Tag.query.all()
 
 def search(filters):
+	#select pics.name, tags.name from pics inner join tag_identifier as ti on pics.id=ti.pic_id inner join tags on tags.id=ti.tag_id where tags.name='pictag';
 	first = True
 	where = '(1=1)'
 	for param in filters:

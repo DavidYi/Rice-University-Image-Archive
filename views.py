@@ -4,7 +4,7 @@ from urllib import urlretrieve
 from PIL import Image
 import os
 
-from models import Tag, Pic, Tag_Hierarchy, search
+from models import Tag, tag_identifier, Pic, Tag_Hierarchy, search
 from testiiif import db, get_exifs,setup, basedir, redirect_url
 
 from forms import CropForm, BatchUpdateForm, AddTag2PicForm, MoveFolderForm, SearchForm, AddFolderForm, UpdateMetadataForm, AddTagForm
@@ -271,7 +271,21 @@ def crop(photo):
 	
 	return render_template('crop_view.html', cropForm=cropForm, pic = pic)
 
-	
+@core.route('/temp')
+def temp():
+	print type(Pic.query.first())
+	result = db.session.execute('select distinct pics.name as pname, tags.name as tname from pics inner join tag_identifier as ti on pics.id=ti.pic_id inner join tags on tags.id=ti.tag_id where tags.name="pictag";');	
+	tid = Tag.query.filter_by(name='pictag').first().id
+	where = '(tags.id ='+ str(tid) + ')'
+	pics = Pic.query.join(Tag, Pic.tags).filter(db.text(where)).all()
+	#pics = Pic.query.filter(Pic.tags.any(Tag.id==tid)).all()
+	print pics
+	tmp = {}
+	print result.fetchall()
+	print type(result.fetchall())
+	for r in result:
+		tmp[r[0]] = dict(r.items())
+	return tmp
 
 @core.route('/printdb', methods=['GET','POST'])
 def printdb():

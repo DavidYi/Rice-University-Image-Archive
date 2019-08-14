@@ -1,5 +1,5 @@
 from watchdog.observers.polling import PollingObserver
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import RegexMatchingEventHandler, FileSystemEventHandler
 import time
 import os
 from models import Pic, db
@@ -32,9 +32,16 @@ class Watcher:
         self.observer.join()
 
 
-class Handler(FileSystemEventHandler):
+class Handler(RegexMatchingEventHandler):
+
+	def __init__(self):
+		super(Handler, self).__init__(ignore_regexes=["^\..*", ".*/\..*"])
+
+
         def on_created(self, event):
-                path = event.src_path
+		if event.is_directory:
+			return
+		path = event.src_path
 		if os.path.splitext(os.path.basename(path))[0][0] == '.':
 			return 
 		print "************create new file at " + str(path)
@@ -42,23 +49,15 @@ class Handler(FileSystemEventHandler):
 		
 		exif = get_exifs([path])[path]
         	date = exif['DateTime']
-		print date
-		new_pic = Pic(str(path), 'test', date=date)
+		new_pic = Pic(str(path), date=date)
                 db.session.add(new_pic)
                 db.session.commit()
-                new_pic.get_thumbnail(200,200)
 		
 
-        def on_moved(self, event):
-                print "************moved" + str(event.src_path) + "--->" + str(event.dest_path)
-                if os.path.splitext(os.path.basename(event.src_path))[0][0] == '.':
-                        return 
-		pic_moved = Pic.query.filter_by(path=event.src_path)
-                pic_moved.change_path(event.dest_path)
-                db.session.commit()
-		
 
         def on_deleted(self, event):
+		if event.is_directory:
+			return
 		if os.path.splitext(os.path.basename(event.src_path))[0][0] == '.':
                         return 
                 print "************deleted" + str(event.src_path)
