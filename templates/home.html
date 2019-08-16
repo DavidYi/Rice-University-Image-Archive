@@ -108,7 +108,7 @@
               <div class="card mb-4 shadow-sm selectable" id="{{ 'pic' + pic.id|string }}" onclick="getMetadata('{{ url_for('api_bp.get_metadata', pic_id=pic.id) }}', '{{pic.id}}', '{{ url_for('api_bp.addTag', pic_id=pic.id) }}', '{{ url_for('api_bp.update_metadata', pic_id=pic.id) }}',  '{{ url_for('core.movingFolder', photo=pic.id) }}')" ondblclick="location.href='{{url_for('core.single', photo=pic.id) }}';" >
                 <!--<img src="{{ url_for('static', filename=pic.get_thumbnail(200,200).get_relative_path()) }}" style="max-width: 100%; max-height:100%;">
                 -->
-                {% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi/','') %}
+                {% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/inputs/','') %}
                 {% set iiif_thmb = base_iiif_url + direct + pic.region + '/!200,200' + pic.rotation + pic.quality  + 'png'  %}
                 <img src="{{ iiif_thmb }}" style="max-width: 100%; max-height:100%;">
                 <div class="card-body">

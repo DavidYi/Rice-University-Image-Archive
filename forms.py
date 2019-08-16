@@ -97,15 +97,17 @@ class BatchUpdateForm(ModelOrderedForm):
 
 
 class SearchForm(ModelOrderedForm):
-	tags = QuerySelectField('Tags', query_factory=tag_select_choices)
-	folder = QuerySelectField('Folder', query_factory=folder_select_choices)
+	tags = QuerySelectField('Tags', query_factory=tag_select_choices, allow_blank=True)
+	folder = QuerySelectField('Folder', query_factory=folder_select_choices, allow_blank=True)
 	submitSearch = SubmitField("Search")
+	
 	class Meta:
                 model = Pic
                 exclude = ['path', 'path_modified', 'region', 'size','rotation', 'quality']
 		include = ['date_photo', 'added']
                 order = ('*', 'folder', 'tags', 'submitSearch')
-		
+		all_fields_optional = True
+	
 	def validate_name(self):
 		return
 	

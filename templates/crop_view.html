@@ -31,7 +31,7 @@
 
 <body>
 	{% set base_iiif_url = request.host_url[:-1] + ':81/loris/' %}
-	{% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi/','') %}
+	{% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/inputs/','') %}
 	<form method="POST" id="cropForm">
     	{{cropForm.coor()}}
     	{{cropForm.submitCoor(_class="btn btn-outline-secondary")}}

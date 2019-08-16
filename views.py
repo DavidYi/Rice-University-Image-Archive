@@ -55,37 +55,48 @@ def delete_folder(folder, delete_id):
 
 @core.route('/search', methods=["GET", "POST"])
 def search_for():
-	folderForm = AddFolderForm()
-	tagForm = AddTagForm()
-	picForm = UpdateMetadataForm()
-	searchForm = SearchForm(request.form)
-	addTagForm = AddTag2PicForm()
-	batchForm = BatchUpdateForm()
+        folderForm = AddFolderForm()
+        picForm = UpdateMetadataForm()
+        searchForm = SearchForm(request.form)
+        tagForm = AddTagForm()
+        addTagForm = AddTag2PicForm()
+        moveForm = MoveFolderForm()
+        batchForm = BatchUpdateForm()
+
+	tag_list = Tag.query.filter_by(isFolder=False).all()
+	children = []
+        pics = []#Pic.query.filter(Pic.tags.any(id=currentFolder.id)).all()
 	
 	if request.method == "POST" and searchForm.submitSearch.data:# and searchForm.validate():
                 print "heeey"
                 data = {}
                 tb = searchForm.meta.model.__tablename__
+		tb_tags = Tag.__table__.name
+		
+		tag_lst = []
                 for field in searchForm:
-                        if field != searchForm.submitSearch and field.data and field.data != "None":
-                                data[tb+'.'+ field.name] = field.data
-                print data
-               	if data:
+		        if field != searchForm.submitSearch and field.data and field.data != "None":
+				if field != searchForm.tags and field != searchForm.folder:
+					data[tb+'.'+ field.name] = field.data
+				else:
+					tag_lst.append(str(field.data.id))
+		data[tb_tags + '.id'] = tag_lst
+
+               	print data
+		if data:
 			pics = search(data)
+			print pics
                 else:
 			pics = {}
-		return render_template('home.html',batchForm=batchForm, addTagForm=addTagForm, searchForm=searchForm, picForm=picForm, tagForm=tagForm, folderForm=folderForm, tag_list=tag_list, pics=pics, folders=[])
+		return render_template('home.html', moveForm=moveForm, batchForm=batchForm, addTagForm=addTagForm, searchForm=searchForm, picForm=picForm, tagForm=tagForm, folderForm=folderForm, tag_list=tag_list, pics=pics, folders=[])
 	'''
         print "searchForm"
         print searchForm.submitSearch.data
         print searchForm.validate()
         '''
 
-	tag_list = Tag.query.filter_by(isFolder=False).all()
-	children = []
-        pics = []#Pic.query.filter(Pic.tags.any(id=currentFolder.id)).all()
 
-        return render_template('home.html', searchForm=searchForm, addTagForm=addTagForm, tagForm=tagForm, picForm=picForm, form=folderForm, pics=pics, folders=children)
+        return render_template('home.html', moveForm=moveForm, batchForm=batchForm, searchForm=searchForm, addTagForm=addTagForm, tagForm=tagForm, picForm=picForm, folderForm=folderForm, pics=pics, folders=children)
 
 
 @core.route('/view/photo/<photo>', methods=["GET", "POST"])
@@ -274,10 +285,11 @@ def crop(photo):
 @core.route('/temp')
 def temp():
 	print type(Pic.query.first())
-	result = db.session.execute('select distinct pics.name as pname, tags.name as tname from pics inner join tag_identifier as ti on pics.id=ti.pic_id inner join tags on tags.id=ti.tag_id where tags.name="pictag";');	
+	result = db.session.execute('select distinct pics.name as pname, tags.name as tname from pics inner join tag_identifier as ti on pics.id=ti.pic_id inner join tags on tags.id=ti.tag_id where tags.name in ("pictag", "folder1") group by ;');	
 	tid = Tag.query.filter_by(name='pictag').first().id
-	where = '(tags.id ='+ str(tid) + ')'
-	pics = Pic.query.join(Tag, Pic.tags).filter(db.text(where)).all()
+	folder = Tag.query.filter_by(name='folder1').first().id
+	where = '(tags.id in ('+ str(tid) + ',' + str(folder) + ')'
+	pics = Pic.query.join(Tag, Pic.tags).filter(db.text(where)).group_by(Pic.name).having(func.count(Pic.name) == 2).all()
 	#pics = Pic.query.filter(Pic.tags.any(Tag.id==tid)).all()
 	print pics
 	tmp = {}

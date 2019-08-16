@@ -3,14 +3,16 @@
 {% block content %}
 {% set base_iiif_url = request.host_url[:-1] + ':81/loris/' %}
 
+{% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/inputs/','') %}
+<!--           <img src="{{ pic.path.replace(basedir, '') }}" alt="could not find pictures" height="800" width="800"> -->
+{% set iiif_pic = base_iiif_url + direct + pic.region + '/,900' + pic.rotation + pic.quality  + 'jpg'  %}
+
+
   <div class="HolyGrail-body">
     <main class="HolyGrail-content">
       <div class="album py-5 bg-light">
         <div class="container">
           {% include 'edit_menu.html' %}
-          {% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi/','') %}
-<!--           <img src="{{ pic.path.replace(basedir, '') }}" alt="could not find pictures" height="800" width="800"> -->
-          {% set iiif_pic = base_iiif_url + direct + pic.region + '/,900' + pic.rotation + pic.quality  + 'jpg'  %}
           <img src='{{ iiif_pic }}' alt="could not find pictures">
           <!--<div id="map"></div>
           <div id="urlArea"></div>

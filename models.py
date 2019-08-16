@@ -31,24 +31,24 @@ class Thumbnail(db.Model):
 class Pic(db.Model):
         __tablename__ = 'pics'
         id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(140))
-        path = db.Column(db.VARCHAR(250), nullable=False, unique=True)
-        path_modified = db.Column(db.VARCHAR(250), unique=True, nullable=True)
+        name = db.Column(db.String(140), info={'label': 'Name'})
+        path = db.Column(db.VARCHAR(250), nullable=False, unique=True, info={'label': 'Path'})
+        path_modified = db.Column(db.VARCHAR(250), unique=True, nullable=True, info={'label': 'Modified Path'})
 	region = db.Column(db.String(140), nullable=False, default='/full')
 	size = db.Column(db.String(140), nullable=False, default='/full')
 	rotation = db.Column(db.String(140), nullable=False, default='/0')
 	quality = db.Column(db.String(140), nullable=False, default='/default.')
-	date_doc = db.Column(db.DateTime)
-	date_photo = db.Column(db.DateTime, nullable=False)
-        added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-	page_number = db.Column(db.Integer)
-	title = db.Column(db.VARCHAR(250))
-	author = db.Column(db.VARCHAR(250))
-	archive = db.Column(db.VARCHAR(250))
-	collection = db.Column(db.VARCHAR(250))
-	box = db.Column(db.VARCHAR(250))
-	folder = db.Column(db.VARCHAR(250))
-	transcript = db.Column(db.Text, default="insert transcript")
+	date_doc = db.Column(db.DateTime, info={'label': 'Date of Document'})
+	date_photo = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, info={'label': 'Date of Picture'})
+        added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, info={'label': 'Date Added'})
+	page_number = db.Column(db.Integer, info={'label': 'Page Number'})
+	title = db.Column(db.VARCHAR(250), info={'label': 'Title'})
+	author = db.Column(db.VARCHAR(250), info={'label': 'Author'})
+	archive = db.Column(db.VARCHAR(250), info={'label': 'Archive'})
+	collection = db.Column(db.VARCHAR(250), info={'label': 'Collection'})
+	box = db.Column(db.VARCHAR(250), info={'label': 'Box'})
+	folder = db.Column(db.VARCHAR(250), info={'label': 'Folder'})
+	transcript = db.Column(db.Text, default="insert transcript", info={'label': 'Transcript'})
         
 	#many to many tags
         tags = db.relationship("Tag", secondary=tag_identifier,back_populates="pics")
@@ -231,13 +231,40 @@ def get_tags():
 	return Tag.query.all()
 
 def search(filters):
-	#select pics.name, tags.name from pics inner join tag_identifier as ti on pics.id=ti.pic_id inner join tags on tags.id=ti.tag_id where tags.name='pictag';
+	where = '(1=1)'
+	group = ''
+	having = ''
+	for param in filters:
+		if filters[param] and isinstance(filters[param], list):
+			where += ' AND ' + str(param) + ' in (' + ','.join(filters[param]) + ')'
+			having = ' HAVING COUNT(DISTINCT tags.id) =' + str(len(filters[param]))
+			group = ' GROUP BY pics.id'
+		else:
+			where += ' AND ' + str(param) + ' = \'' + str(filters[param]) + '\''
+	
+	sqlquery = db.text('SELECT DISTINCT pics.id, tags.name '
+				'FROM pics '
+				'INNER JOIN tag_identifier AS ti ON pics.id=ti.pic_id '
+				'INNER JOIN tags ON tags.id=ti.tag_id '
+				'WHERE' + where + group + having + ';')
+	result = db.session.execute(sqlquery).fetchall()
+	tmp = {}
+	ids = []
+	for r in result:
+		ids.append(r['id'])
+                tmp[r[0]] = dict(r.items())
+	print tmp
+	return Pic.query.filter(Pic.id.in_(ids)).all()
+	'''
 	first = True
 	where = '(1=1)'
 	for param in filters:
 		where += '& (' + str(param) + ' = \'' + str(filters[param]) + '\')'
-	return Pic.query.filter(db.text(where)).all()
 
+	return Pic.query.filter(db.text(where)).all()
+	'''
+	
+	
 
 #print search({Pic.title: 'test'})
 

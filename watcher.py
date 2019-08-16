@@ -2,15 +2,17 @@ from watchdog.observers.polling import PollingObserver
 from watchdog.events import RegexMatchingEventHandler, FileSystemEventHandler
 import time
 import os
-from models import Pic, db
+from shutil import copyfile
+from models import Pic,Tag, db
 from testiiif import get_exifs
 
 def run_watcher():
 	watcher = Watcher()
 	watcher.run()
 
+DIRECTORY_TO_WATCH = "/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi"
+
 class Watcher:
-    DIRECTORY_TO_WATCH = "/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi"
 
     def __init__(self):
         self.observer = PollingObserver()
@@ -19,7 +21,7 @@ class Watcher:
         print "starting watch woof woof!!!!!!"
         
 	event_handler = Handler()       
-	self.observer.schedule(event_handler, self.DIRECTORY_TO_WATCH, recursive=True)
+	self.observer.schedule(event_handler, DIRECTORY_TO_WATCH, recursive=True)
 	self.observer.start()
        
 	try:
@@ -39,20 +41,68 @@ class Handler(RegexMatchingEventHandler):
 
 
         def on_created(self, event):
+		path = os.path.normpath(event.src_path)
+		print "************create new file at " + str(path)
+	
 		if event.is_directory:
 			return
-		path = event.src_path
-		if os.path.splitext(os.path.basename(path))[0][0] == '.':
-			return 
-		print "************create new file at " + str(path)
-		print os.stat(path)
+
+
+
+		#if os.path.splitext(os.path.basename(path))[0][0] == '.':
+		#	return 
 		
-		exif = get_exifs([path])[path]
+		filename = str(os.path.basename(path))
+		filepath = str(os.path.dirname(path))
+		print filename
+		print filepath
+
+		tmp = filepath.replace(DIRECTORY_TO_WATCH, '')
+		base = os.path.join(DIRECTORY_TO_WATCH, '../inputs/')
+		filepath = filepath.replace(DIRECTORY_TO_WATCH, base, 1)
+			
+		direct = tmp.split(os.sep)
+		addition = direct[0]
+
+		filepath =  os.path.normpath(filepath)
+		
+		print filepath
+		print "yoooo"
+		print tmp
+		print direct
+		parent = ''
+		direct = list(filter(None, direct))
+		
+		for folder in direct:
+			if not folder:
+				continue
+			f_tag = Tag.query.filter_by(name=str(folder)).first()
+			if not f_tag:
+				print "creating tag for" + str(folder)
+				f_tag = Tag(str(folder), isFolder=True)
+				if folder != direct[0]:
+					parent.hierarchy(f_tag.id)
+					db.session.commit()
+					print 'creating heirarchy to ' + str(parent)
+			parent = f_tag
+			addition = os.path.join(addition, folder)
+		
+		if not os.path.exists(filepath):
+			os.makedirs(filepath)
+				
+		new_path = os.path.join(filepath, filename)
+
+		copyfile(path,new_path)
+		
+
+		exif = get_exifs([new_path])[new_path]
         	date = exif['DateTime']
-		new_pic = Pic(str(path), date=date)
+		new_pic = Pic(str(new_path), date=date)
                 db.session.add(new_pic)
                 db.session.commit()
-		
+		if len(direct) > 0:
+			new_pic.add_tag(f_tag)
+			db.session.commit()		
 
 
         def on_deleted(self, event):

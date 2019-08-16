@@ -67,7 +67,7 @@ def redirect_url(default='core.index'):
 from multiprocessing import Process
 import watcher
 
-#@app.before_first_request
+@app.before_first_request
 def activate_job():
 	watch = watcher.Watcher()
 	global p 
