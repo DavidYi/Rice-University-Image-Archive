@@ -91,7 +91,7 @@ class BatchUpdateForm(ModelOrderedForm):
 
 	class Meta:
 		model = Pic
-		exclude = ['path', 'path_modified', 'name', 'region', 'rotation', 'quality']
+		exclude = ['path', 'path_modified', 'size', 'name', 'region', 'rotation', 'quality']
 		include = ['date_photo', 'added']
 		order = ('*', 'submitBatch')
 

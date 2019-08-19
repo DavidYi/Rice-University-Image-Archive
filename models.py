@@ -239,7 +239,7 @@ def search(filters):
 			where += ' AND ' + str(param) + ' in (' + ','.join(filters[param]) + ')'
 			having = ' HAVING COUNT(DISTINCT tags.id) =' + str(len(filters[param]))
 			group = ' GROUP BY pics.id'
-		else:
+		elif not isinstance(filters[param],list):
 			where += ' AND ' + str(param) + ' = \'' + str(filters[param]) + '\''
 	
 	sqlquery = db.text('SELECT DISTINCT pics.id, tags.name '
@@ -247,6 +247,7 @@ def search(filters):
 				'INNER JOIN tag_identifier AS ti ON pics.id=ti.pic_id '
 				'INNER JOIN tags ON tags.id=ti.tag_id '
 				'WHERE' + where + group + having + ';')
+	print sqlquery
 	result = db.session.execute(sqlquery).fetchall()
 	tmp = {}
 	ids = []

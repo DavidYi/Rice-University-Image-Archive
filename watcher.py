@@ -5,6 +5,10 @@ import os
 from shutil import copyfile
 from models import Pic,Tag, db
 from testiiif import get_exifs
+from PIL import Image
+import sys
+import fitz
+
 
 def run_watcher():
 	watcher = Watcher()
@@ -12,26 +16,48 @@ def run_watcher():
 
 DIRECTORY_TO_WATCH = "/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi"
 
+
+def split(pdf_filepath,jpg_dir):
+	doc = fitz.open(pdf_filepath)
+
+	#borrowed from https://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python?lq=1
+	for i in range(len(doc)):
+		print i
+		for img in doc.getPageImageList(i):
+			xref = img[0]
+			pix = fitz.Pixmap(doc, xref)
+			output_filename = "%s-%s.jpg" % (i, xref)
+			output_filepath = os.path.join(jpg_dir,output_filename)
+			print output_filepath
+			
+			pix = fitz.Pixmap(fitz.csRGB, pix)
+			img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+			img.save(output_filepath,"JPEG")
+	
+			pix = None
+
+
+
 class Watcher:
 
-    def __init__(self):
-        self.observer = PollingObserver()
+	def __init__(self):
+		self.observer = PollingObserver()
 
-    def run(self):
-        print "starting watch woof woof!!!!!!"
-        
-	event_handler = Handler()       
-	self.observer.schedule(event_handler, DIRECTORY_TO_WATCH, recursive=True)
-	self.observer.start()
-       
-	try:
-            while True:
-                time.sleep(5)
-        except:
-            self.observer.stop()
-            print "Error"
+	def run(self):
+		print "starting watch woof woof!!!!!!"
 
-        self.observer.join()
+		event_handler = Handler()       
+		self.observer.schedule(event_handler, DIRECTORY_TO_WATCH, recursive=True)
+		self.observer.start()
+
+		try:
+			while True:
+				time.sleep(5)
+		except:
+			self.observer.stop()
+			print "Error"
+
+		self.observer.join()
 
 
 class Handler(RegexMatchingEventHandler):
@@ -47,20 +73,37 @@ class Handler(RegexMatchingEventHandler):
 		if event.is_directory:
 			return
 
+		filename = str(os.path.basename(path))
+                filepath = str(os.path.dirname(path))
+                print filename
+                print filepath
+
+		tmp = filepath.replace(DIRECTORY_TO_WATCH, '')
+		#base = os.path.join(DIRECTORY_TO_WATCH, '../inputs/')
+		#filepath = filepath.replace(DIRECTORY_TO_WATCH, base, 1)
+
+		name = os.path.splitext(filename)
 
 
+		if name[1].lower() == '.pdf':
+
+			jpg_dir = os.path.join(filepath,name[0])
+			print jpg_dir
+			if os.path.exists(jpg_dir):
+				return
+			os.makedirs(jpg_dir)
+			
+			try:
+				split(path,jpg_dir)
+			except:
+				print("Failed on", path + ".pdf")
+				print("Unexpected error:", sys.exc_info()[0])
+				print sys.exc_info()
+			return
 		#if os.path.splitext(os.path.basename(path))[0][0] == '.':
 		#	return 
 		
-		filename = str(os.path.basename(path))
-		filepath = str(os.path.dirname(path))
-		print filename
-		print filepath
 
-		tmp = filepath.replace(DIRECTORY_TO_WATCH, '')
-		base = os.path.join(DIRECTORY_TO_WATCH, '../inputs/')
-		filepath = filepath.replace(DIRECTORY_TO_WATCH, base, 1)
-			
 		direct = tmp.split(os.sep)
 		addition = direct[0]
 
@@ -87,18 +130,21 @@ class Handler(RegexMatchingEventHandler):
 			parent = f_tag
 			addition = os.path.join(addition, folder)
 		
-		if not os.path.exists(filepath):
-			os.makedirs(filepath)
+		#if not os.path.exists(filepath):
+		#	os.makedirs(filepath)
 				
 		new_path = os.path.join(filepath, filename)
-
-		copyfile(path,new_path)
+		if Pic.query.filter_by(path=new_path).first():
+			return
+		#copyfile(path,new_path)
 		
-
-		exif = get_exifs([new_path])[new_path]
-        	date = exif['DateTime']
-		new_pic = Pic(str(new_path), date=date)
-                db.session.add(new_pic)
+		try:
+			exif = get_exifs([new_path])[new_path]
+        		date = exif['DateTime']
+			new_pic = Pic(str(new_path), date=date)
+                except:
+			new_pic = Pic(str(new_path))
+		db.session.add(new_pic)
                 db.session.commit()
 		if len(direct) > 0:
 			new_pic.add_tag(f_tag)
