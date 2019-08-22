@@ -114,6 +114,19 @@ class SearchForm(ModelOrderedForm):
 	def return_field_names(self):
 		return self._fields.key()
 
+class EditFolderForm(FlaskForm):
+	id = HiddenField('')
+	name = StringField('Name', validators=[DataRequired()])
+	folder = QuerySelectField('Move Folder', query_factory=folder_select_choices)
+	submitEdit = SubmitField('Save Changes')
+	deleteFolder = SubmitField('Delete')
+
+class EditTagForm(FlaskForm):
+	id = HiddenField('')
+	name = StringField('Name', validators=[DataRequired()])
+	submitChanges = SubmitField('Save Changes')
+	deleteTag = SubmitField('Delete')
+
 class CropForm(FlaskForm):
 	coor = HiddenField()
 	submitCoor = SubmitField('Crop')

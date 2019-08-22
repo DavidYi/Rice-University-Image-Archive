@@ -11,7 +11,12 @@ $(document).ready(function(){
         elem.toggleClass("selected");
     }
 	});
+
 });
+
+function toggleForm(id){
+  $(id).toggle();
+}
 
 function openForm(id) {
   document.getElementById(id).style.display = "block";
@@ -31,5 +36,6 @@ function selectTags(select)
       $(select).val() + '" /> ' +
       $(select).find('option[selected]').text() + '</li>');
 }
+
 
 

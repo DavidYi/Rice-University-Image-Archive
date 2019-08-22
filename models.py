@@ -182,34 +182,70 @@ class Tag(db.Model):
                                 db.session.delete(parent_del)
 		db.session.commit()
 	
-        def hierarchy(self, child_id):
-		descendents = Tag_Hierarchy.query.filter_by(parent_id=child_id).all()
-		print "hiiiii"
-		print descendents	
-		#delete the current parent tags for child_id tag
-		#past_depth = Tag_Hierarchy.query.filter((Tag_Hierarchy.node_id==child_id) & (Tag_Hierarchy.parent_id==Tag.query.filter_by(name=".root").first().id)).first().depth
-		
-		for d in descendents:
-			print "************* descdent"
-			print d
-			for relation in Tag_Hierarchy.query.filter_by(node_id=self.id).all():
-				print "-------> r"
-				print relation
-				if relation.parent_id != self.id:
-                                        parent_del = Tag_Hierarchy.query.filter((Tag_Hierarchy.parent_id == relation.parent_id) & (Tag_Hierarchy.node_id == d.node_id)).first()
-                                        if parent_del:
-						db.session.delete(parent_del)
-                db.session.commit()	
+	def delete_folder(self):
+		#parent = Tag_Hierarchy.query.filter((Tag_Hierarchy.node_id==folder.id) & (Tag_Hierarchy.depth==1)).first()
+                #parent = Tag.query.filter_by(id = parent.parent_id).first()
+		parent = Tag.query.filter_by(name='.root').first()
+			
+		#move folder to root
+		children = self.get_direct_children()
+		for child in children:
+			parent.hierarchy(child.id)
+
+		#get rid of any relationship
+		relations = Tag_Hierarchy.query.filter((Tag_Hierarchy.parent_id==self.id) | (Tag_Hierarchy.node_id==self.id)).all()
+		for relation in relations:
+			db.session.delete(relation)
+		db.session.commit()
 	
-		print "relations"
-		#add new relation for new parent tags for child_id
-                for relation in Tag_Hierarchy.query.filter_by(node_id=self.id).all():
-			print relation
-			print "*******"
-			print descendents
+		#move photos to root
+		photos = Pic.query.filter(Pic.tags.any(id=self.id)).all()
+		for photo in photos:
+			photo.add_tag(self)
+		
+		db.session.delete(self)
+		db.session.commit()
+
+        def hierarchy(self, child_id):
+		#changes the hierarchy of the tag, so need to delete the to be child tag and its subtags' relation with its current parent, and then create hierarchical relation with current tag
+
+		descendents = Tag_Hierarchy.query.filter_by(parent_id=child_id).all()
+		parents_past = Tag_Hierarchy.query.filter_by(node_id=child_id).all()
+		parents_new = Tag_Hierarchy.query.filter_by(node_id=self.id).all()
+		print "changing the hierarchy of the tag"
+		print "descendents:\t" + str(descendents)
+		print "parents_past:\t" + str(parents_past)
+	
+		#if to be child folder already is a child folder ignore\
+		if Tag_Hierarchy.query.filter((Tag_Hierarchy.parent_id==self.id) & (Tag_Hierarchy.node_id == child_id) & (Tag_Hierarchy.depth == 1)).first():
+			print "ABORT: CHILD IS ALREADY A CHILD OF CURRENT FOLDER"
+			return
+
+		#if the child folder is a parent of the current folder
+		if Tag_Hierarchy.query.filter((Tag_Hierarchy.parent_id==child_id) & (Tag_Hierarchy.node_id == self.id)).first():
+			print "CHILD IS A PARENT OF CURRENT FOLDER: ABORT"
+			return
+
+		#delete the current parent tags for child_id tag
+		#goes through every descendent and delete relation with every parent of the child_id tag
+		for d in descendents:
+			for relation in parents_past:
+				print relation
+				if relation.parent_id != child_id:
+                                        parent_del = Tag_Hierarchy.query.filter((Tag_Hierarchy.parent_id == relation.parent_id) & (Tag_Hierarchy.node_id == d.node_id)).first()
+					print "deleting.... \t\t" + str(parent_del)
+					if parent_del:
+						db.session.delete(parent_del)
+                db.session.commit()
+	
+		print "adding new relations"
+		print "parents_new:\t" + str(parents_new)
+
+		#add new relation for new parent tags(this tag and its parents) for child_id
+                for relation in parents_new:
 			for descendent in descendents:
 				temp = Tag_Hierarchy(relation.parent_id, descendent.node_id, relation.depth + descendent.depth + 1)
-			db.session.add(temp)
+				db.session.add(temp)
 		
 		db.session.commit()
 
@@ -230,11 +266,15 @@ def get_pics():
 def get_tags():
 	return Tag.query.all()
 
+
+# given the filters in a dictionary format, this function searches the pictures based on the filters
+# should be given in this format {"tablename.column": "data", ...}
 def search(filters):
 	where = '(1=1)'
 	group = ''
 	having = ''
 	for param in filters:
+		#this if function is to check for the tag and folder filter
 		if filters[param] and isinstance(filters[param], list):
 			where += ' AND ' + str(param) + ' in (' + ','.join(filters[param]) + ')'
 			having = ' HAVING COUNT(DISTINCT tags.id) =' + str(len(filters[param]))
@@ -251,11 +291,14 @@ def search(filters):
 	result = db.session.execute(sqlquery).fetchall()
 	tmp = {}
 	ids = []
+	# translate the row proxy object into a dictionary so that we can print and a list of just the id to get pictures as pic model object
 	for r in result:
 		ids.append(r['id'])
                 tmp[r[0]] = dict(r.items())
 	print tmp
-	return Pic.query.filter(Pic.id.in_(ids)).all()
+
+	return Pic.query.filter(Pic.id.in_(ids)).order_by(Pic.name).all()
+
 	'''
 	first = True
 	where = '(1=1)'
@@ -267,8 +310,7 @@ def search(filters):
 	
 	
 
-#print search({Pic.title: 'test'})
-
+# get the hierarchy of t
 def get_hierarchy():
 	h = Tag_Hierarchy.query.filter_by(depth=1).all()
 	hier = {}

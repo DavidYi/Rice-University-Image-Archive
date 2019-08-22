@@ -37,7 +37,7 @@ import models
 
 
 ######### FUNCTIONS #######
-
+#gets the metadata in the photo
 def get_exifs(paths):
         exifs = {}
         for path in paths:
@@ -50,14 +50,17 @@ def get_exifs(paths):
                         exifs[path][decoded] = value
         return exifs
 
+#set up database so that clearing db starts with root folder and 'untagged' tag
 def setup():
 	root = models.Tag('.root', hidden=True, isFolder=True)
 	untagged = models.Tag('untagged')	
 
+#waits until tag table is created
 @event.listens_for(models.Tag.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
 	setup()
 
+#gives url before redirected to current route
 def redirect_url(default='core.index'):
 	return request.args.get('next') or \
 		request.referrer or \
@@ -65,14 +68,17 @@ def redirect_url(default='core.index'):
 
 ########### WATCHER ##########
 from multiprocessing import Process
-import watcher
+#import watcher
 
-@app.before_first_request
+'''
+#SINCE ITS BEFORE FIRST REQUEST, IF WE RESTART HTTPD WE NEED TO DO AN ACTION TO START UP THE WATCHDOG APP
+#@app.before_first_request
 def activate_job():
 	watch = watcher.Watcher()
 	global p 
 	p = Process(target=watch.run)
 	p.start()
+'''
 
 ######### ROUTES ##########
 from views import core

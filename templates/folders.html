@@ -26,13 +26,6 @@
     </ul>
 
     <h1>Tags</h1>
-    <br>
-    <div class="tags-list">
-        {% for tag in tag_list %}
-            <a href="#">{{ tag.name }}</a>
-            <br>
-        {% endfor %}
-    </div>
     <button class="add-tag-button" onclick="openForm('tagForm')"><i class="material-icons">add_box</i></button>
     <div class="form-popup" id="tagForm">
       <form method="POST" class="form-container">
@@ -42,6 +35,14 @@
         {{ tagForm.submitTag(class_="btn") }}
         <button type="button" class="btn cancel" onclick="closeForm('tagForm')">Cancel</button>
       </form>
+    </div>
+
+    <div class="tags-list">
+        {% for tag in tag_list %}
+            <a href="#">{{ tag.name }}</a>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#editTag" data-name="{{ tag.name }}" data-id="{{ tag.id }}" ><i class="material-icons">menu</i></button>
+            <br>
+        {% endfor %}
     </div>
 </nav>
 

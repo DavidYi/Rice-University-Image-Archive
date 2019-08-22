@@ -12,6 +12,10 @@
           {% set base_iiif_url = request.host_url[:-1] + ':81/loris/' %}
           {% set item, row = namespace(a=0), 3%}
 
+          {% if folder_path %}
+            {% set current_folder = folder_path[-1] %}
+          {% endif %}
+
           {% for folder in folders %}
             
             {% if item.a % row == 0 %}
@@ -26,7 +30,7 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="btn-group">
                       <button type="button" onclick="location.href='{{url_for('core.home', folder= folder.name)}}';" class="btn btn-sm btn-outline-secondary">View</button>
-                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#editFolder" data-name="{{ folder.name }}" data-id="{{ folder.id }}" data-parentid="{{ current_folder.id }}">Edit</button>
                     </div>
                     <small class="text-muted"></small>
                   </div>
@@ -50,8 +54,8 @@
 
             <div class="col-md-4">
               <div class="card mb-4 shadow-sm selectable" id="{{ 'pic' + pic.id|string }}" onclick="getMetadata('{{ url_for('api_bp.get_metadata', pic_id=pic.id) }}', '{{pic.id}}', '{{ url_for('api_bp.addTag', pic_id=pic.id) }}', '{{ url_for('api_bp.update_metadata', pic_id=pic.id) }}',  '{{ url_for('core.movingFolder', photo=pic.id) }}')" ondblclick="location.href='{{url_for('core.single', photo=pic.id) }}';" >
-                
-                {% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi/','') %}
+
+                {% set direct = pic.path.replace('/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/storage/','') %}
                 {% set iiif_thmb = base_iiif_url + direct + pic.region + '/!200,200' + pic.rotation + pic.quality  + 'png'  %}
                 <img src="{{ iiif_thmb }}" style="max-width: 100%; max-height:100%;">
                 <div class="card-body">
@@ -92,8 +96,9 @@
       {% include 'metadata.html' %}
     </aside>
 
-
-
+    {% if folders %}
+      {% include 'modal.html' %}
+    {% endif %}
   </div>
 
   <script type="text/javascript">
@@ -258,6 +263,35 @@
         }
       });
     }
+
+    $('#editFolder').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var name = button.data('name'); // Extract info from data-* attributes
+      var id = button.data('id');
+      var parent_id = button.data('parentid');
+
+      // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+      // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+      var modal = $(this);
+      modal.find('.modal-body #name').val(name);
+      modal.find('.modal-body #id').val(id);
+      modal.find('.modal-body #folder option').prop("disabled", false);
+      modal.find('.modal-body #folder option[value="' + id + '"]').prop("disabled", true);
+      modal.find('.modal-body #folder option[value="' + parent_id + '"]').prop("selected", true);
+    })
+
+    $('#editTag').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var name = button.data('name'); // Extract info from data-* attributes
+      var id = button.data('id');
+
+      // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+      // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+      var modal = $(this);
+      modal.find('.modal-body #name').val(name);
+      modal.find('.modal-body #id').val(id);
+    })
+
   </script>
 
 {% endblock %}

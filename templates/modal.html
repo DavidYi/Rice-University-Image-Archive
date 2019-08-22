@@ -1,0 +1,65 @@
+<div class="modal fade" id="editFolder" tabindex="-1" role="dialog" aria-labelledby="editFolder" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="POST" id="editFolderForm" action="{{ url_for('core.edit_folder') }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="title">Edit Folder</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          {% for field in editFolderForm %}
+            {% if field != editFolderForm.submitEdit and field != editFolderForm.deleteFolder%}
+              {% if field != editFolderForm.csrf_token %}
+                {{ field.label() }}
+              {% endif %}
+              {{ field() }}
+
+              </br>
+            {% endif %}
+          {% endfor %}
+
+        </div>
+        <div class="modal-footer">
+          {{ editFolderForm.deleteFolder(class_='btn btn-danger') }}
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          {{ editFolderForm.submitEdit(class_='btn btn-primary') }}
+        </div>
+    </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editTag" tabindex="-1" role="dialog" aria-labelledby="editTag" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="POST" id="editFolderForm" action="{{ url_for('core.edit_tag') }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="title">Edit Tag</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          {% for field in editTagForm %}
+            {% if field != editTagForm.submitChanges and field != editTagForm.deleteTag%}
+              {% if field != editTagForm.csrf_token %}
+                {{ field.label() }}
+              {% endif %}
+              {{ field() }}
+
+              </br>
+            {% endif %}
+          {% endfor %}
+
+        </div>
+        <div class="modal-footer">
+          {{ editTagForm.deleteTag(class_='btn btn-danger') }}
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          {{ editTagForm.submitChanges(class_='btn btn-primary') }}
+        </div>
+    </form>
+    </div>
+  </div>
+</div>

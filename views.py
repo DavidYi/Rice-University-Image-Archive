@@ -7,7 +7,7 @@ import os
 from models import Tag, tag_identifier, Pic, Tag_Hierarchy, search
 from testiiif import db, get_exifs,setup, basedir, redirect_url
 
-from forms import CropForm, BatchUpdateForm, AddTag2PicForm, MoveFolderForm, SearchForm, AddFolderForm, UpdateMetadataForm, AddTagForm
+from forms import EditTagForm, EditFolderForm, CropForm, BatchUpdateForm, AddTag2PicForm, MoveFolderForm, SearchForm, AddFolderForm, UpdateMetadataForm, AddTagForm
 
 core = Blueprint('core', __name__)
 
@@ -15,6 +15,7 @@ core = Blueprint('core', __name__)
 def index():
         return redirect(url_for('core.home', folder='.root'))
 
+#view for items in any folder
 @core.route('/view/<folder>', methods=["GET", "POST"])
 def home(folder):
 	print "hi"
@@ -25,8 +26,10 @@ def home(folder):
 	addTagForm = AddTag2PicForm()
 	moveForm = MoveFolderForm()
 	batchForm = BatchUpdateForm()
-
- 	currentFolder = Tag.query.filter((Tag.name==folder) & (Tag.isFolder==True)).first_or_404()
+	editFolderForm = EditFolderForm()
+	editTagForm = EditTagForm()
+ 	
+	currentFolder = Tag.query.filter((Tag.name==folder) & (Tag.isFolder==True)).first_or_404()
 	folder_hierarchy = Tag_Hierarchy.query.filter_by(node_id = currentFolder.id).order_by(Tag_Hierarchy.depth.desc()).all()
 	folder_path = [Tag.query.filter_by(id = h.parent_id).first() for h in folder_hierarchy]
 	
@@ -44,15 +47,18 @@ def home(folder):
 
 	tag_list = Tag.query.filter_by(isFolder=False).all()
 	children = currentFolder.get_direct_children()
-	pics = Pic.query.filter(Pic.tags.any(id=currentFolder.id)).all()
+	pics = Pic.query.filter(Pic.tags.any(id=currentFolder.id)).order_by(Pic.name).all()
 	
-	return render_template('home.html', batchForm=batchForm, moveForm=moveForm, addTagForm=addTagForm, tagForm=tagForm, searchForm=searchForm, picForm=picForm, folderForm=folderForm, tag_list=tag_list, folder_path=folder_path, pics=pics, folders=children)
+	return render_template('home.html', editTagForm=editTagForm, editFolderForm=editFolderForm, batchForm=batchForm, moveForm=moveForm, addTagForm=addTagForm, tagForm=tagForm, searchForm=searchForm, picForm=picForm, folderForm=folderForm, tag_list=tag_list, folder_path=folder_path, pics=pics, folders=children)
 
+
+#route to delete folder -> TO DO probably in resources 
 @core.route('/view/<folder>/delete_folder/<delete_id>', methods=["GET", "POST"])
 def delete_folder(folder, delete_id):
 	tbd = Tag.query.filter_by(id=delete_id).first_or_404()
 	
 
+# route for what was searched
 @core.route('/search', methods=["GET", "POST"])
 def search_for():
         folderForm = AddFolderForm()
@@ -62,10 +68,11 @@ def search_for():
         addTagForm = AddTag2PicForm()
         moveForm = MoveFolderForm()
         batchForm = BatchUpdateForm()
+	editTagForm = EditTagForm()
 
 	tag_list = Tag.query.filter_by(isFolder=False).all()
 	children = []
-        pics = []#Pic.query.filter(Pic.tags.any(id=currentFolder.id)).all()
+        pics = []
 	
 	if request.method == "POST" and searchForm.submitSearch.data:# and searchForm.validate():
                 print "heeey"
@@ -74,6 +81,7 @@ def search_for():
 		tb_tags = Tag.__table__.name
 		
 		tag_lst = []
+		# go through searchForm and create a filter dictionary in the form of {"tablename.column": "data",...} to pass through search function located in models.py
                 for field in searchForm:
 		        if field != searchForm.submitSearch and field.data and field.data != "None":
 				if field != searchForm.tags and field != searchForm.folder:
@@ -88,7 +96,7 @@ def search_for():
 			print pics
                 else:
 			pics = {}
-		return render_template('home.html', moveForm=moveForm, batchForm=batchForm, addTagForm=addTagForm, searchForm=searchForm, picForm=picForm, tagForm=tagForm, folderForm=folderForm, tag_list=tag_list, pics=pics, folders=[])
+		return render_template('home.html', editTagForm= editTagForm, moveForm=moveForm, batchForm=batchForm, addTagForm=addTagForm, searchForm=searchForm, picForm=picForm, tagForm=tagForm, folderForm=folderForm, tag_list=tag_list, pics=pics, folders=[])
 	'''
         print "searchForm"
         print searchForm.submitSearch.data
@@ -96,9 +104,41 @@ def search_for():
         '''
 
 
-        return render_template('home.html', moveForm=moveForm, batchForm=batchForm, searchForm=searchForm, addTagForm=addTagForm, tagForm=tagForm, picForm=picForm, folderForm=folderForm, pics=pics, folders=children)
+        return render_template('home.html', moveForm=moveForm, batchForm=batchForm, editTagForm=editTagForm, searchForm=searchForm, addTagForm=addTagForm, tagForm=tagForm, picForm=picForm, folderForm=folderForm, pics=pics, folders=children)
+
+@core.route('/editFolder', methods=["POST"])
+def edit_folder():
+	editForm = EditFolderForm(request.form)
+	folder = Tag.query.filter((Tag.isFolder == True) & (Tag.id == editForm.id.data)).first_or_404()
+
+	if request.method == "POST" and editForm.deleteFolder.data:
+		folder.delete_folder()
+	elif request.method == "POST" and editForm.submitEdit.data:
+		folder.name = editForm.name.data
+		new_parent = Tag.query.filter((Tag.isFolder == True) & (Tag.id == editForm.folder.data.id)).first_or_404()
+		print new_parent
+		new_parent.hierarchy(folder.id)
+		db.session.commit()
+
+	return redirect(redirect_url())
 
 
+@core.route('/editTag', methods=["POST"])
+def edit_tag():
+	editForm = EditTagForm(request.form)
+	tag = Tag.query.filter_by(id=editForm.id.data).first_or_404()
+	
+	if request.method == "POST" and editForm.deleteTag.data:
+		if tag.name != 'untagged':
+			db.session.delete(tag)
+			db.session.commit()
+	elif request.method == "POST" and editForm.submitChanges.data:
+		tag.name = editForm.name.data
+		db.session.commit()
+
+	return redirect(redirect_url())
+
+# single photo view route
 @core.route('/view/photo/<photo>', methods=["GET", "POST"])
 def single(photo):
 	pic = Pic.query.filter_by(id=photo).first_or_404()
@@ -123,6 +163,7 @@ def single(photo):
 	print "hey"
 	return render_template('photo_view.html', moveForm=moveForm, addTagForm=addTagForm, picForm=picForm, basedir=basedir, pic = pic)
 
+#route to add tag
 @core.route('/view/photo/<photo>/addTag', methods=["GET", "POST"])
 def addingTag(photo):
         pic = Pic.query.filter_by(id=photo).first_or_404()
@@ -132,6 +173,7 @@ def addingTag(photo):
                 pic.add_tag(addTagForm.all_tags.data)
         return redirect(url_for('core.single', photo=photo))
 
+#route to move folder
 @core.route('/view/photo/<photo>/move', methods=["GET", "POST"])
 def movingFolder(photo):
         pic = Pic.query.filter_by(id=photo).first_or_404()
@@ -150,7 +192,7 @@ def movingFolder(photo):
         #return redirect(url_for('core.single', photo=photo))
 
 
-
+#route ot remove tag: TO BE ADDED
 @core.route('/view/photo/<photo>/deleteTag/<tag>',methods=["GET", "POST"])
 def remove_tag(photo, tag):
 	pic = Pic.query.filter_by(id=photo).first_or_404()
@@ -159,6 +201,7 @@ def remove_tag(photo, tag):
 	print "removed tag"
 	return redirect(url_for('core.single', photo=photo))
 
+#test stuff 
 @core.route('/test', methods=["GET", "POST"])
 def iiif():
 	form = UpdateMetadataForm()
@@ -185,47 +228,7 @@ def iiif():
         return send_file(image.serve(), mimetype='image/jpeg')
 
 
-@core.route('/populatedb', methods=["GET", "POST"])
-def popdb():
-	path = basedir + '/mnt/rdf/jcm10/crc_summer_dev/hi/'
-	dirs = os.listdir( path )
-
-	for f in dirs:
-		if f[0] != '.':
-			exif = get_exifs([path+f])[path+f]
-			date = exif['DateTime']
-			pic = Pic(path+str(f), date=date)
-			db.session.add(pic)
-	'''
-        path =basedir+'/mnt/rdf/jcm10/crc_summer_dev/photo_dump_1/IMG_9763.JPG'
-        exif = get_exifs([path])[path]
-        date = exif['DateTime']
-        pic = Pic(path, 'test1', date=date)
-        ''' 
-	
-	tag1 = Tag("folder1", isFolder=True)
-	tag6 = Tag("folder2", isFolder=True)
-        tag2 = Tag("pictag")
-        tag3 = Tag("subfolder1", isFolder=True)
-        tag5 = Tag("subsubfolder", isFolder=True)
-        tag4 = Tag("subfolder2", isFolder=True)
-        #print "hi"
-
-        tag1.hierarchy(tag3.id)
-        tag1.hierarchy(tag4.id)
-        tag3.hierarchy(tag5.id)
-
-        #db.session.add(Tag_Hierarchy(tag1.id, tag1.id, 0))
-        #db.session.commit()
-
-        db.session.commit()
-
-        pic.add_tag(tag2)
-        pic.add_tag(tag1)
-
-        #return redirect(url_for('core.printdb'))
-        return '<h1>' + str(exif) + '</h1>'
-
+#more testing for db
 @core.route('/testdb', methods=["GET", "POST"])
 def testdb():
         #pic = Pic.query.all()[0]
@@ -244,6 +247,7 @@ def testdb():
         #return str(Tag_Hierarchy.query.filter_by(depth=0).all())
         '''
 
+# clear db: FOR TESTING PURPOSE IN THE CASE OF DEPLOYMENT, PROBS GET RID OF IT
 @core.route('/cleardb', methods=["GET", "POST"])
 def cleardb():
         meta = db.metadata
@@ -254,6 +258,7 @@ def cleardb():
 	setup()
         return redirect(url_for('core.printdb'))
 
+#rotating the photo
 @core.route('/rotate/<photo>/<dir>')
 def rotate(photo, dir):
 	pic = Pic.query.filter_by(id=photo).first_or_404()
@@ -270,6 +275,7 @@ def rotate(photo, dir):
 	db.session.commit()
 	return redirect(redirect_url())
 
+#ROUTE TO CROP VIEW
 @core.route('/view/crop/<photo>', methods=["GET","POST"])
 def crop(photo):
 	pic = Pic.query.filter_by(id=photo).first_or_404()
@@ -282,23 +288,8 @@ def crop(photo):
 	
 	return render_template('crop_view.html', cropForm=cropForm, pic = pic)
 
-@core.route('/temp')
-def temp():
-	print type(Pic.query.first())
-	result = db.session.execute('select distinct pics.name as pname, tags.name as tname from pics inner join tag_identifier as ti on pics.id=ti.pic_id inner join tags on tags.id=ti.tag_id where tags.name in ("pictag", "folder1") group by ;');	
-	tid = Tag.query.filter_by(name='pictag').first().id
-	folder = Tag.query.filter_by(name='folder1').first().id
-	where = '(tags.id in ('+ str(tid) + ',' + str(folder) + ')'
-	pics = Pic.query.join(Tag, Pic.tags).filter(db.text(where)).group_by(Pic.name).having(func.count(Pic.name) == 2).all()
-	#pics = Pic.query.filter(Pic.tags.any(Tag.id==tid)).all()
-	print pics
-	tmp = {}
-	print result.fetchall()
-	print type(result.fetchall())
-	for r in result:
-		tmp[r[0]] = dict(r.items())
-	return tmp
 
+#to print what is in the database
 @core.route('/printdb', methods=['GET','POST'])
 def printdb():
         return str(Pic.query.all()) + "<br><br> tags:" + str(Tag.query.all()) + "<br><br> hierarchy:" + str(Tag_Hierarchy.query.all())
