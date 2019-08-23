@@ -1,0 +1,346 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
+{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red27\green31\blue34;\red0\green0\blue0;\red255\green255\blue255;
+\red26\green26\blue26;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c14118\c16078\c18039;\csgray\c0;\csgray\c100000;
+\cssrgb\c13333\c13333\c13333;\cssrgb\c100000\c100000\c100000;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid1\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid2\'02\'01.;}{\levelnumbers\'01;}\fi-360\li1440\lin1440 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid101\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+\margl1440\margr1440\vieww13240\viewh14900\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\fs28 \cf0 Instructions for bootstrap app\
+\
+#get in as sudo\
+sudo bash\
+\
+###### set up bootstrap app #####\
+\
+## set up LAMP stack ##\
+\
+#apache stuff\
+\pard\pardeftab560\pardirnatural\partightenfactor0
+\ls1\ilvl1\cf0 yum install httpd\
+\pard\tx720\tx1440\pardeftab560\pardirnatural\partightenfactor0
+\cf0 systemctl start httpd.service\
+systemctl enable httpd.service\
+\
+#db stuff \
+yum install mariadb-server mariadb\
+systemctl start mariadb\
+\
+mysql_secure_installation\
+\pard\tx220\tx720\tx1440\tx2160\pardeftab560\li720\fi-720\pardirnatural\partightenfactor0
+\ls2\ilvl0\cf0 {\listtext	\uc0\u8259 	}change password (I used ricecrc) then y for everything # makes things more secure\
+\pard\tx720\tx1440\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+systemctl enable mariadb.service\
+\
+yum install php php-mysql\
+systemctl restart httpd\
+\pard\tx720\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \
+\pard\tx720\pardeftab560\pardirnatural\partightenfactor0
+\cf0 ## make project folder and install dependencies ##\
+\pard\tx720\tx1440\tx2160\pardeftab560\pardirnatural\partightenfactor0
+\cf0 yum update\
+yum install python-devel mysql-devel python-setuptools mod_wsgi git\
+easy_install pip\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 pip install mysql-connector flask flask-sqlalchemy flask_migrate pymysql flask-marshmallow marshmallow-sqlalchemy watchdog flask_wtf wtforms_alchemy Flask-IIIF python-dotenv\
+\pard\tx720\tx1440\tx2160\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+\pard\tx720\tx1440\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+## making project directory\
+cd /var/www/\
+\
+git clone 
+\f1 \cf2 \expnd0\expndtw0\kerning0
+https://github.com/DavidYi/testiiif.git\
+
+\f0 \cf0 \kerning1\expnd0\expndtw0 \
+\
+## create config files \
+\pard\tx720\tx1440\tx2160\pardeftab560\pardirnatural\partightenfactor0
+\cf0 cd /etc/httpd/conf.d/\
+vi testiiif.conf\
+\
+### in the file copy this into it ### (to get into insert mode press i when you first go in)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 NameVirtualHost *\
+<VirtualHost *:80>\
+        ServerName 10.134.196.53\
+\
+        WSGIDaemonProcess testiiif processes=2\
+        WSGIScriptAlias / /var/www/testiiif/testiiif.wsgi\
+        WSGIApplicationGroup %\{GLOBAL\}\
+\
+        <Directory /var/www/testiiif>\
+                WSGIScriptReloading On\
+                WSGIProcessGroup testiiif\
+                <IfVersion < 2.4>\
+                        Order allow, deny\
+                        Allow from all\
+                </IfVersion>\
+                <IfVersion >= 2.4>\
+                        Require all granted\
+                </IfVersion>\
+        </Directory>\
+        Alias '/stat' '/var/www/testiiif/static'\
+        <Directory /var/www/testiiif/static>\
+        <IfVersion < 2.4>\
+                        Order allow, deny\
+                        Allow from all\
+                </IfVersion>\
+                <IfVersion >= 2.4>\
+                        Require all granted\
+                </IfVersion>\
+        </Directory>\
+\
+        Alias '/mnt/rdf/jcm10/crc_summer_dev' '/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev'\
+        <Directory /var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev>\
+                <IfVersion < 2.4>\
+                        Order allow, deny\
+                        Allow from all\
+                </IfVersion>\
+                <IfVersion >= 2.4>\
+                        Require all granted\
+                </IfVersion>\
+        </Directory>\
+\
+        Alias '/statmntpdf' '/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/miller_wright/HRC_Image_Archiving_Interface'\
+\
+</VirtualHost>
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 \
+\pard\tx720\tx1440\tx2160\pardeftab560\pardirnatural\partightenfactor0
+\cf0 ############################\
+\
+\
+\
+\
+\
+## mount the rdf\
+cd /var/www/testiiif \
+yum install cifs-utils\
+chmod u+s /bin/mount /bin/umount /usr/sbin/mount.cifs \
+\pard\pardeftab720\partightenfactor0
+\cf0 mkdir mkdir mnt\
+mkdir mnt/rdf\
+\pard\tx720\tx1440\tx2160\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+##Add the below line to /etc/fstab: (i.e. vi /etc/fstab)\
+//smb.rdf.rice.edu/research/ /var/www/testiiif/mnt/rdf cifs \cf5 \cb6 \expnd0\expndtw0\kerning0
+mfsymlinks,rw,vers=3.0,sign,noperm,domain=ADRICE,user,noauto 0 0\cf0 \cb1 \kerning1\expnd0\expndtw0 \
+\
+##then run\
+exit\
+mount /var/www/testiiif/mnt/rdf\
+sudo bash\
+cd /var/www/testiiif\
+\
+\
+\
+\
+\pard\tx720\tx1440\pardeftab560\pardirnatural\partightenfactor0
+\cf0 ## set up database\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 # get access to db\
+mysql --password=ricecrc\
+\
+# use address of the vm ex: Orion-196-58.crc.rice.edu\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 GRANT ALL PRIVILEGES ON *.* to 'root'@'Orion-196-53.crc.rice.edu'\
+IDENTIFIED BY 'ricecrc' WITH GRANT OPTION;\
+\
+
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 \
+## create database to use in app (if you use different name then change in code accordingly)\
+
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 CREATE DATABASE test;
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 \
+\
+# for mysql\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 exit\
+\
+#change the connection link\
+sudo vi testiiif.py\
+##look for the database link and change the IP address to the current one (for me it was 10.134.196.58)\
+\
+flask db init\
+flask db migrate -m \'93set up\'94\
+flask db upgrade \
+\
+\pard\tx720\tx1440\tx2160\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+mkdir static/thumbnails\
+\
+## Fix permission stuff\
+setsebool -P httpd_use_cifs=1\
+\pard\tx720\tx1440\tx9561\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+#give permission to access the folder we use ( I use mnt/rdf/jcm10/crc_summer_dev/)\
+chmod 755 mnt/rdf/jcm10/crc_summer_dev/\
+\pard\tx720\pardeftab560\pardirnatural\partightenfactor0
+\cf0 chmod 770 testiiif.wsgi\
+chmod 775 testiiif.py\
+chmod 775 static/\
+\
+chown -R apache:apache testiiif.py\
+chown -R apache:apache testiiif.wsgi\
+chown -R apache:apache static/\
+\
+setsebool -P httpd_can_network_connect_db=1 \
+setsebool -P httpd_unified=1\
+\pard\tx720\tx1440\tx2160\pardeftab560\pardirnatural\partightenfactor0
+\cf0 \
+\pard\tx720\tx1440\pardeftab560\pardirnatural\partightenfactor0
+\cf0 systemctl restart httpd\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 \
+\
+##### iiif server installation ####\
+\
+#turn off se linux\
+setenforce=0\
+yum install git wget mod_wsgi python-devel bzip2\
+cd /opt\
+git clone https://github.com/loris-imageserver/loris.git\
+cd loris\
+\
+wget https://bootstrap.pypa.io/get-pip.py\
+python get-pip.py\
+pip install -r requirements.txt --ignore-installed\
+\
+yum install libjpeg-turbo libjpeg-turbo-devel \\\
+    freetype freetype-devel \\\
+    zlib-devel \\\
+    libtiff-devel\
+pip install Werkzeug\
+pip install Pillow\
+yum install gcc\
+\
+\
+\
+##set up working directories and permissions\
+mkdir /var/www/loris2\
+useradd -d /var/www/loris2 -s /sbin/false loris\
+\
+\
+#CHANGE CONFIG FILE\
+###change the config file to point at the images in /opt/loris/etc file -- variable is "scr_img_root"\
+###Default is: /usr/local/share/images/\
+###I used: 
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 src_img_root = '/var/www/testiiif/mnt/rdf/jcm10/crc_summer_dev/hi' # r--\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\pardirnatural\partightenfactor0
+\
+\
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 ###change the config file in /etc/httpd/conf/httpd.conf file \
+## add the line below where listen is being described to make it organized\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 Listen 81
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 \
+\
+\
+###Now you can install Loris:\
+cd /opt/loris\
+python setup.py install\
+\
+\
+### some dependencies will be out of date so run the line below\
+pip install flask\
+pip install PyMuPDF \
+\
+\
+\
+####now create the below files (code in this repo):\
+\
+\
+#######loris.conf in /etc/httpd/conf.d/\
+###### content below ##################\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 NameVirtualHost *:81\
+<VirtualHost *:81>\
+		AllowEncodedSlashes On\
+\
+        WSGIDaemonProcess loris user=loris group=loris processes=10 threads=15 maximum-requests=10000\
+        WSGIScriptAlias /loris /var/www/loris2/loris.wsgi\
+        <directory /var/www/loris2>\
+            WSGIProcessGroup loris\
+            WSGIApplicationGroup %\{GLOBAL\}\
+            WSGIScriptReloading On\
+        Require all granted\
+        </directory>\
+\
+</VirtualHost>
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 ######### end content ################\
+\
+\
+#######loris.wsgi in /var/www/loris2/\
+###### content below #################\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 #!/usr/bin/env python\
+\
+from loris.webapp import create_app\
+application = create_app(config_file_path='/opt/loris/etc/loris2.conf')
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 ######## end content #################\
+\
+\
+#######loris.te in /opt/loris/\
+###### content below #################\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\pardirnatural\partightenfactor0
+
+\f1\fs22 \cf3 \cb4 \CocoaLigature0 module loris 1.0;\
+\
+require \{\
+        type httpd_t;\
+        type var_t;\
+        class file \{ write read getattr open \};\
+\}\
+\
+#============= httpd_t ==============\
+allow httpd_t var_t:file \{ write read getattr open \};
+\f0\fs28 \cf0 \cb1 \CocoaLigature1 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 ######## end content #################\
+\
+\
+\
+\
+\
+\
+####Then compile the SELinux rules as below:\
+cd /opt/loris/ \
+checkmodule -M -m -o loris.mod loris.te\
+semodule_package -m loris.mod -o loris.pp\
+semodule -i loris.pp\
+\
+mkdir /var/log/loris2\
+chown loris /var/log/loris2\
+mkdir /var/cache/loris\
+chown loris /var/cache/loris\
+\
+httpd -k start\
+\
+##Then turn SELinux back on:\
+setenforce=1\
+\
+}
