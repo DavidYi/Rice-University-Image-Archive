@@ -4,6 +4,9 @@ from forms import BatchUpdateForm, MoveFolderForm, AddTag2PicForm, UpdateMetadat
 from models import Tag, TagSchema, Pic, PicSchema, Tag_Hierarchy
 from testiiif import db, redirect_url
 
+import datetime
+import dateutil.parser
+
 api_bp = Blueprint('api_bp', __name__)
 
 pic_schema = PicSchema()
@@ -14,7 +17,12 @@ tags_schema = TagSchema(many=True)
 def get_metadata(pic_id):
 	pic = Pic.query.filter_by(id=pic_id).first()
 	tags = pic.tags
+
 	pic = pic_schema.dump(pic).data
+	#translate ISO 8601 date string into datetime object, but banks on fact that column name has date in it
+	for field in pic:
+		if "date" in field:
+			pic[field] = dateutil.parser.parse(pic[field]).strftime("%m/%d/%Y, %H:%M:%S")
 	tags = tags_schema.dump(tags).data
 	return jsonify(pic=pic, tags=tags)
 

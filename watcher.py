@@ -91,6 +91,7 @@ class Handler(RegexMatchingEventHandler):
 	
 		#IF DIRECTORY DO NOTHING
 		if event.is_directory:
+			print "IS DIRECTORY"
 			return
 
 		filename = str(os.path.basename(path))
@@ -116,13 +117,25 @@ class Handler(RegexMatchingEventHandler):
 
 		type = name[1].lower()
 
+		time_to_wait = 10
+		time_counter = 0
+		while not os.path.exists(path):
+			time.sleep(1)
+			time_counter += 1
+			print "waiting"
+			if time_counter > time_to_wait:
+				print "took too long to download"
+				return
+		print "Created"
 
 		#IF THE FILE IS A PDF, create folder to put img in and split pdf into images to put into created folder
                 if type == '.pdf':
 
+			print "PDF PROCEDURE"
                         jpg_dir = os.path.join(filepath_un,name[0])
 			#print jpg_dir
                         if os.path.exists(jpg_dir):
+				print "directory already exists"
                                 return
                         os.makedirs(jpg_dir)
 
@@ -185,6 +198,7 @@ class Handler(RegexMatchingEventHandler):
 
 				#if picture already has entry then do nothing
 				if Pic.query.filter_by(path=new_path).first():
+					print "PATH ALREADY EXISTS IN DATABASE DOING NOTHING"
 					return
 		
 				if not os.path.exists(filepath):

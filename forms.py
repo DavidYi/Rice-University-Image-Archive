@@ -79,7 +79,7 @@ class UpdateMetadataForm(ModelOrderedForm):
 	class Meta:
 		model = Pic
 		exclude = ['region','size','rotation','quality']
-		include = ['date_photo', 'added']
+		include = ['date_photo', 'date_added']
 		order = ('*', 'submitMetadata')
 
 	#tags = ModelFieldList(FormField(AddTagForm))
@@ -92,7 +92,7 @@ class BatchUpdateForm(ModelOrderedForm):
 	class Meta:
 		model = Pic
 		exclude = ['path', 'path_modified', 'size', 'name', 'region', 'rotation', 'quality']
-		include = ['date_photo', 'added']
+		include = ['date_photo', 'date_added']
 		order = ('*', 'submitBatch')
 
 
@@ -104,7 +104,7 @@ class SearchForm(ModelOrderedForm):
 	class Meta:
                 model = Pic
                 exclude = ['path', 'path_modified', 'region', 'size','rotation', 'quality']
-		include = ['date_photo', 'added']
+		include = ['date_photo', 'date_added']
                 order = ('*', 'folder', 'tags', 'submitSearch')
 		all_fields_optional = True
 	

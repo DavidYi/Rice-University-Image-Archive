@@ -40,7 +40,7 @@ class Pic(db.Model):
 	quality = db.Column(db.String(140), nullable=False, default='/default.')
 	date_doc = db.Column(db.DateTime, info={'label': 'Date of Document'})
 	date_photo = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, info={'label': 'Date of Picture'})
-        added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, info={'label': 'Date Added'})
+	date_added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, info={'label': 'Date Added'})
 	page_number = db.Column(db.Integer, info={'label': 'Page Number'})
 	title = db.Column(db.VARCHAR(250), info={'label': 'Title'})
 	author = db.Column(db.VARCHAR(250), info={'label': 'Author'})
@@ -66,7 +66,7 @@ class Pic(db.Model):
 
 		self.date_photo = date
 		self.date_doc = date
-		self.added = datetime.utcnow()
+		self.date_added = datetime.utcnow()
                 self.path = str(path)
 			
 		self.add_tag(Tag.query.filter_by(name=".root").first())

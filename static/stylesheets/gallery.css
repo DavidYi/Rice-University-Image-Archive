@@ -12,15 +12,22 @@
 
 .HolyGrail-content {
   flex: 1;
+  overflow-y:scroll;
+  overflow-x: scroll;
+  max-height: 100vh;
 }
 
 
 .HolyGrail-nav {
   flex: 0 0 15em;
+  overflow-y:scroll;
+  max-height: 100vh;
 }
 
  .HolyGrail-ads {
   flex: 0 0 20em;
+  overflow-y:scroll;
+  max-height: 100vh;
 }
 
 .HolyGrail-nav {
