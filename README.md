@@ -9,3 +9,4 @@ Our current humanities research test clients on the app has ~40k images with ~38
 We used [SQLAlchemy](https://www.sqlalchemy.org) as the ORM (to define the models and do most of the queries), defined the schema using [Marshmallow](https://flask-marshmallow.readthedocs.io/en/latest/) (object deserialization library), and watch the SMB share for file system events using [Watchdog](https://pythonhosted.org/watchdog/index.html).
 
 The set up instructions for setting this app up can be found in the repository.
+*********ONE WARNING: the way it is set up works only on Rice Network with permission because it uses Rice University's VM resource
