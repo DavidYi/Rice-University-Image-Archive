@@ -1,4 +1,4 @@
-# testiiif
+# Rice University Image Archive
 
 This is a file system interface web app for image archiving by designing a Python Flask/Bootstrap web app and workflow on a CentOS 7 VM on Rice University research computing infrastructure.
 
